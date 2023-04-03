@@ -5,7 +5,7 @@ import math
 import pygame
 from os import listdir
 from os.path import isfile,join
-
+import PlayerInfo
 
 #init pygame
 pygame.init()
@@ -32,11 +32,12 @@ def get_background(name):
     return tiles, image
 
 
-def draw(window, background,bg_image):
+def draw(window, background,bg_image,player):
     #this method will draw out the game window
     for tile in background:
         window.blit(bg_image,tile)
     
+    player.draw(window)
     pygame.display.update()
 
 def main(window):
@@ -45,7 +46,7 @@ def main(window):
     
     background, bg_image = get_background("Blue.png")
 
-
+    player = PlayerInfo.Player(100,100,50,50)
 
     run = True
     while run:
@@ -55,7 +56,7 @@ def main(window):
             if event.type == pygame.QUIT:
                 run = False
                 break
-        draw(window,background,bg_image)
+        draw(window,background,bg_image,player)
 
 
     #lets leave the game
