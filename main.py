@@ -6,6 +6,8 @@ import pygame
 from os import listdir
 from os.path import isfile,join
 import PlayerInfo
+import PlayerMove
+import SpriteLoad
 
 #init pygame
 pygame.init()
@@ -13,7 +15,6 @@ pygame.display.set_caption("My Platformer")
 BG_COLOR = (255,255,255)
 WIDTH, HEIGHT = 1000,800
 FPS =60
-PLAYER_VEL = 5
 
 window = pygame.display.set_mode((WIDTH,HEIGHT))
 
@@ -43,10 +44,12 @@ def draw(window, background,bg_image,player):
 def main(window):
     #our main function which will be our entry point
     clock = pygame.time.Clock()
-    
+    pygame.init()
     background, bg_image = get_background("Blue.png")
 
     player = PlayerInfo.Player(100,100,50,50)
+    playerMover = PlayerMove.PlayerMove()
+    # sprite_loader = SpriteLoad.SpriteLoad()
 
     run = True
     while run:
@@ -56,6 +59,9 @@ def main(window):
             if event.type == pygame.QUIT:
                 run = False
                 break
+
+        player.loop(FPS)
+        playerMover.handle_move(player)
         draw(window,background,bg_image,player)
 
 
