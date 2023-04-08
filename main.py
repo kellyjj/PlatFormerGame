@@ -24,7 +24,7 @@ class SpriteLoad():
         # return self.loadspriteSheets(dir, dir2,width,height)
         pass
 
-    def flip(sprites):
+    def flip_it(sprites):
         return [pygame.transform.flip(sprite,True,False) for sprite in sprites]
 
     def loadspriteSheets(dir, dir2,width,height,direction=False):
@@ -44,7 +44,7 @@ class SpriteLoad():
             
             if direction:
                 all_sprites[image.replace(".png","")+"_right"] = sprites
-                all_sprites[image.replace(".png","")+"_left"]= flip(sprites)
+                all_sprites[image.replace(".png","")+"_left"] = flip_it(sprites)
             else: 
                 all_sprites[image.replace(".png","")]=sprites
         
@@ -58,7 +58,7 @@ class Player(pygame.sprite.Sprite):
     COLOR = (255,255,255)
     GRAVITY = 1
     SpriteLoad()
-    SPRITES = SpriteLoad.loadspriteSheets("MainCharacters","MaskDude",32,32)
+    SPRITES = SpriteLoad.loadspriteSheets("MainCharacters","MaskDude",32,32,True)
  
     def __init__(self, x, y, width,height):
         #lets init our player character
@@ -100,7 +100,7 @@ class Player(pygame.sprite.Sprite):
             self.animation_count =0
 
     def loop(self,fps):
-        #self.y_vel  += min(1,(self.fallcount/fps)*self.GRAVITY)
+        self.y_vel  += min(1,(self.fallcount/fps)*self.GRAVITY)
         self.move(self.x_vel,self.y_vel)
         self.fallcount = self.fallcount+1
 
