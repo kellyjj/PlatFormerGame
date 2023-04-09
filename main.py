@@ -19,13 +19,14 @@ FPS =60
 window = pygame.display.set_mode((WIDTH,HEIGHT))
 
 #sprite load class
+def flip_it(sprites):
+        return [pygame.transform.flip(sprite,True,False) for sprite in sprites]
+
+
 class SpriteLoad():
     def __init__(self):
         # return self.loadspriteSheets(dir, dir2,width,height)
         pass
-
-    def flip_it(sprites):
-        return [pygame.transform.flip(sprite,True,False) for sprite in sprites]
 
     def loadspriteSheets(dir, dir2,width,height,direction=False):
         path = join("assets",dir, dir2)
@@ -100,15 +101,18 @@ class Player(pygame.sprite.Sprite):
             self.animation_count =0
 
     def loop(self,fps):
-        self.y_vel  += min(1,(self.fallcount/fps)*self.GRAVITY)
+        # self.y_vel  += min(1,(self.fallcount/fps)*self.GRAVITY)
         self.move(self.x_vel,self.y_vel)
         self.fallcount = self.fallcount+1
 
     def draw(self, win):
+        # pygame.draw.rect(win,self.COLOR,self.rect)
+        # win.blit(self.sprite,self.dest)
 
-        pygame.draw.rect(win,self.COLOR,self.rect)
-        self.sprite = self.SPRITES["idle"][0] 
-        win.blit(self.sprite,self.dest)
+        self.sprite = self.SPRITES["idle_"+self.direction][0] 
+        win.blit(self.sprite,(self.rect.x,self.rect.y) )
+
+
 # End of player info
 
 
@@ -167,7 +171,7 @@ def main(window):
     pygame.init()
     background, bg_image = get_background("Blue.png")
 
-    player = Player(100,100,50,50)
+    player = Player(100,100,60,65)
     playerMover = PlayerMove()
     sprite_loader = SpriteLoad()
 
