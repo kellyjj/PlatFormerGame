@@ -60,6 +60,7 @@ class Player(pygame.sprite.Sprite):
     GRAVITY = 1
     SpriteLoad()
     SPRITES = SpriteLoad.loadspriteSheets("MainCharacters","MaskDude",32,32,True)
+    ANIMATION_DELAY = 2
  
     def __init__(self, x, y, width,height):
         #lets init our player character
@@ -104,12 +105,24 @@ class Player(pygame.sprite.Sprite):
         # self.y_vel  += min(1,(self.fallcount/fps)*self.GRAVITY)
         self.move(self.x_vel,self.y_vel)
         self.fallcount = self.fallcount+1
+        self.update_sprite()
+
+    def update_sprite(self):
+        sprite_sheet = "idle"
+        if self.x_vel!=0:
+            sprite_sheet = "run"
+
+        sprite_sheet_name = sprite_sheet + "_"+self.direction
+        sprites = self.SPRITES[sprite_sheet_name]
+        sprite_index = (self.animation_count//self.ANIMATION_DELAY) % len(sprites)
+        self.sprite = sprites[sprite_index]
+        self.animation_count +=1
 
     def draw(self, win):
         # pygame.draw.rect(win,self.COLOR,self.rect)
         # win.blit(self.sprite,self.dest)
+        # self.sprite = self.SPRITES["idle_"+self.direction][0] 
 
-        self.sprite = self.SPRITES["idle_"+self.direction][0] 
         win.blit(self.sprite,(self.rect.x,self.rect.y) )
 
 
@@ -125,7 +138,7 @@ class PlayerMove():
 
 
     def handle_move(self,player):
-        # player.x_vel = 0
+        player.x_vel = 0
         # player.y_vel = 0
         keys = pygame.key.get_pressed()
         if keys[pygame.K_LEFT]:
