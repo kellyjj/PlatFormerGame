@@ -101,16 +101,25 @@ class Player(pygame.sprite.Sprite):
         self.animation_count = 0
         self.dest = (x,y)
         self.IsLanded = False
+        self.jump_count =0 
+
+    def jump(self):
+        self.y_vel = -self.GRAVITY * 24
+        self.animation_count =0 
+        self.jump_count +=1
+        if self.jump_count==1:
+            self.fall_count  =0
+
+ 
 
     def landed(self):
         self.fall_count = 0
-        self.y_val = 0 
+        self.y_vel = 0 
         self.jump_count =0 
-        
-
+ 
     def hit_head(self):
         self.count =0
-        self.y_vel =-1*self.y_val
+        self.y_vel =-1*self.y_vel
 
 
     def move(self,dx,dy):
@@ -142,10 +151,11 @@ class Player(pygame.sprite.Sprite):
             self.animation_count =0
 
     def loop(self,fps):
-        if self.IsLanded == False:
-            self.y_vel  += min(1,(self.fallcount/fps)*self.GRAVITY)
+        # if self.IsLanded == False:
+        self.y_vel  += min(1,(self.fallcount/fps)*self.GRAVITY)
         self.move(self.x_vel,self.y_vel)
         self.fallcount = self.fallcount+1
+
         self.update_sprite()
 
     def update_sprite(self):
@@ -189,7 +199,6 @@ class PlayerMove():
             if pygame.sprite.collide_mask(player,obj):
                 if dy>0:
                     player.rect.bottom = obj.rect.top
-                    player.IsLanded = True
                     player.landed()
                 if dy<0:
                     player.rect.top = obj.rect.bottom
@@ -266,6 +275,9 @@ def main(window):
             if event.type == pygame.QUIT:
                 run = False
                 break
+            if event.type == pygame.KEYDOWN:
+                if event.key==pygame.K_SPACE and player.jump_count<2:
+                    player.jump()
 
         player.loop(FPS)
         playerMover.handle_move(player,floor)
