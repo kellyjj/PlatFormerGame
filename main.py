@@ -5,9 +5,6 @@ import math
 import pygame
 from os import listdir
 from os.path import isfile,join
-# import PlayerInfo
-# import PlayerMove
-# import SpriteLoad
 
 #init pygame
 pygame.init()
@@ -16,13 +13,15 @@ BG_COLOR = (255,255,255)
 WIDTH, HEIGHT = 1000,800
 FPS =60
 
-window = pygame.display.set_mode((WIDTH,HEIGHT))
+window = pygame.display.set_mode((WIDTH,HEIGHT))  # set main window properties
 
 #sprite load class
 def flip_it(sprites):
+        #this method takes the sprite (main character, and flips it.  ie change from running left/right)
         return [pygame.transform.flip(sprite,True,False) for sprite in sprites]
 
 def get_block(size):
+    #this method goes and gets the block we use for the land
     path = join("assets","Terrain","Terrain.png")
     image = pygame.image.load(path).convert_alpha()
     surface = pygame.Surface((size,size),pygame.SRCALPHA,32)
@@ -31,6 +30,7 @@ def get_block(size):
     return pygame.transform.scale2x(surface)
 
 class Object(pygame.sprite.Sprite):
+    #base class for the class block, do this so we have all the init in 1 place
     def __init__(self, x,y,width, height, name = None):
         super().__init__()
         self.rect = pygame.Rect(x,y,width,height)
@@ -43,6 +43,7 @@ class Object(pygame.sprite.Sprite):
         win.blit(self.image,(self.rect.x-offset_x,self.rect.y))
 
 class Block(Object):
+    #this draws said blocks on screen
     def __init__(self, x, y, size):
         super().__init__(x, y, size,size )
         block = get_block(size)
@@ -50,11 +51,13 @@ class Block(Object):
         self.mask = pygame.mask.from_surface(self.image)
 
 class SpriteLoad():
+    #class for loading a sprite
     def __init__(self):
         # return self.loadspriteSheets(dir, dir2,width,height)
         pass
 
     def loadspriteSheets(dir, dir2,width,height,direction=False):
+        #this method goes and loads the jpgs of our sprite, and breaks them into a dictionary.
         path = join("assets",dir, dir2)
         images = [f for f in listdir(path)  if isfile(join(path,f)) ]
         all_sprites = {}
@@ -82,6 +85,7 @@ class SpriteLoad():
 
 # playerinfo class
 class Player(pygame.sprite.Sprite):
+    #this class handles a lot of the stuff for player
     COLOR = (255,255,255)
     GRAVITY = 1
     SpriteLoad()
@@ -104,54 +108,60 @@ class Player(pygame.sprite.Sprite):
         self.jump_count =0 
 
     def jump(self):
+        #this handles the action of jumping.
         self.y_vel = -self.GRAVITY * 16
         self.animation_count =0 
         self.jump_count +=1
         if self.jump_count==1:
             self.fall_count  =0
 
- 
-
     def landed(self):
+        #this handles the action of when we have landed on top of a block
         self.fall_count = 0
         self.y_vel = 0 
         self.jump_count =0 
  
     def hit_head(self):
+        #this takes care of when we hit our head on a block above us
         self.count =0
         self.y_vel =-1*self.y_vel
 
 
     def move(self,dx,dy):
+        #this handles hte action of moving left/right/up/down.  
         self.rect.x += dx
         self.rect.y += dy
 
     def move_left(self,vel):
+        #this handles specifically the action of moving left.  that is why we have a neg vel
         self.x_vel = -vel
         if self.direction != "left":
             self.direction = "left"
             self.animation_count =0
 
     def move_right(self,vel):
+        #this handles specifically the action of moving left.  that is why we have a pos vel
         self.x_vel = vel
         if self.direction != "right":
             self.direction = "right"
             self.animation_count =0
 
     def move_up(self,vel):
+        #action of moving up
         self.y_vel = -vel
         if self.direction != "up":
             self.direction = "up"
             self.animation_count =0
 
     def move_down(self,vel):
+        #action of moving down
         self.y_vel = vel
         if self.direction != "down":
             self.direction = "down"
             self.animation_count =0
 
     def loop(self,fps):
-        # if self.IsLanded == False:
+        # if self.IsLanded == False:  this method also handles us falling till we land
         self.y_vel  += min(1,(self.fallcount/fps)*self.GRAVITY)
         self.move(self.x_vel,self.y_vel)
         self.fallcount = self.fallcount+1
@@ -159,6 +169,7 @@ class Player(pygame.sprite.Sprite):
         self.update_sprite()
 
     def update_sprite(self):
+        #this updates our specific sprite
         sprite_sheet = "idle"
         if self.x_vel!=0:
             sprite_sheet = "run"
@@ -195,6 +206,9 @@ class Player(pygame.sprite.Sprite):
 # player move class
 PLAYER_VEL = 5
 def handle_vertical_collision(player,objects,dy):
+    #this does the calculation of whether we've hit our head.  the basic premis
+    #       is that we check to see if our mask has a collison with something else, and if it'sour
+    #       head, we boucn back to the ground.  if the collison happens on our bottom, then we've landed
     collided_objects = []
     for obj in objects:
         if pygame.sprite.collide_mask(player,obj):
@@ -208,16 +222,18 @@ def handle_vertical_collision(player,objects,dy):
     return collided_objects
 
 def collide_left(player,objects,dx):
+    #this checks for whether or not we've had a collison our left.  
     colided_object = []
     player.move(dx, 0)
     player.update()
     blocknotground = False
 
-
+    #collide_mask will detect several collisons and we have no way of easily telling if it's left/right/top/bottom.
+    #this is not the most effective way of doing this, and will probably be glitchy.
     for obj in objects:
         if pygame.sprite.collide_mask(player,obj):
             y = obj.rect.centery
-            blocknotground  = y <700
+            blocknotground  = y <700   #for this game, our ground is at pixel 702 and higher.
             colided_object.append(obj)
             
     if blocknotground==False:
@@ -228,6 +244,7 @@ def collide_left(player,objects,dx):
     return colided_object
 
 def collide_right(player,objects,dx):
+    #same as colide left, but for when we are head right.
     colided_object = []
     player.move(dx, 0)
     player.update()
@@ -253,6 +270,7 @@ class PlayerMove():
         pass
 
     def handle_move(self,player,objects):
+        #this handles grabbing the keys and doing the move
         player.x_vel = 0
         # colide_left = False
         # colide_right = False
@@ -312,6 +330,7 @@ def main(window):
     scroll_area_width = 200
     player = Player(100,100,50,50)
     block_size = 96
+    #the floor is what we drwa when we only want a floor, objects is when we want more elevated items
     floor = [Block(i * block_size, HEIGHT - block_size, block_size)  for i in range(-WIDTH // block_size, (WIDTH * 2) // block_size)]
     objects = [*floor, Block(0, HEIGHT - block_size * 2, block_size), Block(block_size * 3, HEIGHT - block_size * 4, block_size)]
 
@@ -321,6 +340,7 @@ def main(window):
     playerMover = PlayerMove()
     sprite_loader = SpriteLoad()
 
+    #main loop for game
     run = True
     while run:
         clock.tick(FPS)
@@ -332,7 +352,7 @@ def main(window):
             if event.type == pygame.KEYDOWN:
                 if event.key==pygame.K_SPACE and player.jump_count<2:
                     player.jump()
-
+        
         player.loop(FPS)
         playerMover.handle_move(player,itemtodraw)
         draw(window,background,bg_image,player,itemtodraw,offset_x)
