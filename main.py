@@ -194,38 +194,79 @@ class Player(pygame.sprite.Sprite):
 
 # player move class
 PLAYER_VEL = 5
+def handle_vertical_collision(player,objects,dy):
+    collided_objects = []
+    for obj in objects:
+        if pygame.sprite.collide_mask(player,obj):
+            if dy>0:
+                player.rect.bottom = obj.rect.top
+                player.landed()
+            if dy<0:
+                player.rect.top = obj.rect.bottom
+                player.hit_head()
+        collided_objects.append(obj)
+    return collided_objects
+
+def collide_left(player,objects,dx):
+    colided_object = []
+    player.move(dx, 0)
+    player.update()
+    blocknotground = False
+
+
+    for obj in objects:
+        if pygame.sprite.collide_mask(player,obj):
+            y = obj.rect.centery
+            blocknotground  = y <700
+            colided_object.append(obj)
+            
+    if blocknotground==False:
+        colided_object.clear()
+    player.move(-dx, 0)
+    player.update()
+
+    return colided_object
+
+def collide_right(player,objects,dx):
+    colided_object = []
+    player.move(dx, 0)
+    player.update()
+    blocknotground = False
+
+
+    for obj in objects:
+        if pygame.sprite.collide_mask(player,obj):
+            y = obj.rect.centery
+            blocknotground  = y <700 and player.rect.centerx < obj.rect.centerx
+            colided_object.append(obj)
+            
+    if blocknotground==False:
+        colided_object.clear()
+    player.move(-dx, 0)
+    player.update()
+
+    return colided_object
+
 
 class PlayerMove():
     def __init__(self) -> None:
         pass
-    
- 
-    def handle_vertical_collision(self,player,objects,dy):
-        collided_objects = []
-        for obj in objects:
-            if pygame.sprite.collide_mask(player,obj):
-                if dy>0:
-                    player.rect.bottom = obj.rect.top
-                    player.landed()
-                if dy<0:
-                    player.rect.top = obj.rect.bottom
-                    player.hit_head()
-            collided_objects.append(obj)
-        return collided_objects
 
     def handle_move(self,player,objects):
         player.x_vel = 0
-        # player.y_vel = 0
+        # colide_left = False
+        # colide_right = False
+
+        colide_left = collide_left(player,objects,-PLAYER_VEL*2)
+        colide_right = collide_right(player,objects,PLAYER_VEL*2)
+
         keys = pygame.key.get_pressed()
-        if keys[pygame.K_LEFT]:
+        if keys[pygame.K_LEFT] and len(colide_left) <=1 :
             player.move_left(PLAYER_VEL)
-        if keys[pygame.K_RIGHT]:
+        if keys[pygame.K_RIGHT] and len(colide_right) <=1:
             player.move_right(PLAYER_VEL)
-        # if keys[pygame.K_UP]:
-        #     player.move_up(PLAYER_VEL)            
-        # if keys[pygame.K_DOWN]:
-        #     player.move_down(PLAYER_VEL)            
-        self.handle_vertical_collision(player,objects,player.y_vel)
+ 
+        handle_vertical_collision(player,objects,player.y_vel)
 
 #end of player move class
 
@@ -269,10 +310,14 @@ def main(window):
 
     offset_x =0
     scroll_area_width = 200
-    player = Player(100,100,60,65)
+    player = Player(100,100,50,50)
     block_size = 96
     floor = [Block(i * block_size, HEIGHT - block_size, block_size)  for i in range(-WIDTH // block_size, (WIDTH * 2) // block_size)]
-    # blocks =[Block(0,HEIGHT-block_size,block_size)]
+    objects = [*floor, Block(0, HEIGHT - block_size * 2, block_size), Block(block_size * 3, HEIGHT - block_size * 4, block_size)]
+
+    itemtodraw = objects
+
+   # blocks =[Block(0,HEIGHT-block_size,block_size)]
     playerMover = PlayerMove()
     sprite_loader = SpriteLoad()
 
@@ -289,8 +334,8 @@ def main(window):
                     player.jump()
 
         player.loop(FPS)
-        playerMover.handle_move(player,floor)
-        draw(window,background,bg_image,player,floor,offset_x)
+        playerMover.handle_move(player,itemtodraw)
+        draw(window,background,bg_image,player,itemtodraw,offset_x)
         if ((player.rect.right - offset_x >= WIDTH - scroll_area_width) and player.x_vel > 0) or ((player.rect.left - offset_x <= scroll_area_width) and player.x_vel < 0):
             offset_x += player.x_vel
 
