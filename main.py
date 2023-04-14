@@ -211,7 +211,7 @@ class Player(pygame.sprite.Sprite):
 
         if self.hit:
             self.hit_count+=1
-        if self.hit_count > 10: #fps*2:
+        if self.hit_count > fps*2:
             self.hit = False
             self.hit_count = 0
 
@@ -344,6 +344,7 @@ class PlayerMove():
             if obj:
                 for i in obj:
                     if i.name == "fire":
+                        #needed to have a way to know when I am hitting a trap.  this was the simplest. may move to other collisions
                         x_hit = pygame.math.Vector2(player.rect.centerx,player.rect.centery).distance_to((i.rect.centerx,i.rect.centery))
                         if x_hit <70:
                             player.make_hit()
