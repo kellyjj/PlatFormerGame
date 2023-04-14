@@ -50,6 +50,44 @@ class Block(Object):
         self.image.blit(block,(0,0))
         self.mask = pygame.mask.from_surface(self.image)
 
+class Fire(Object):
+    #this class will handle the fire traps
+    ANIMATION_DELAY = 3
+
+    def __init__(self, x, y, width, height, name="fire"):
+        super().__init__(x, y, width, height, name)
+        self.fire = SpriteLoad.loadspriteSheets("Traps","Fire",width,height)
+        self.image = self.fire["on"][0]
+        self.mask = pygame.mask.from_surface(self.image)
+        self.animation_count = 0
+        self.animation_name = "on"
+
+    def on(self):
+        self.animation_name = "on"
+
+    def off(self):
+        self.animation_name = "off"
+
+    def loop(self):
+        sprites = self.fire[self.animation_name ]
+        sprite_index = (self.animation_count//self.ANIMATION_DELAY) % len(sprites)
+        self.image = sprites[sprite_index]
+        self.animation_count +=1
+
+        self.rect = self.image.get_rect(topleft=(self.rect.x,self.rect.y))
+        self.mask = pygame.mask.from_surface(self.image)
+
+        if self.animation_count // self.ANIMATION_DELAY > len(sprites):
+            self.animation_count = 0
+
+    def draw(self, win,offset_x):
+        # pygame.draw.rect(win,self.COLOR,self.rect)
+        # win.blit(self.sprite,self.dest)
+        # self.sprite = self.SPRITES["idle_"+self.direction][0] 
+
+        win.blit(self.image,(self.rect.x-offset_x,self.rect.y) )
+  
+
 class SpriteLoad():
     #class for loading a sprite
     def __init__(self):
@@ -315,6 +353,7 @@ def draw(window, background,bg_image,player,objects,offset_x):
         obj.draw(window,offset_x)
 
     player.draw(window,offset_x)
+    # fire.draw(window,offset_x)
     pygame.display.update()
 
 
@@ -327,12 +366,16 @@ def main(window):
     background, bg_image = get_background("Blue.png")
 
     offset_x =0
+    block_size = 96
     scroll_area_width = 200
     player = Player(100,100,50,50)
-    block_size = 96
+
+    fire = Fire(100,HEIGHT-block_size-64,16,32)
+    fire.on()
+    
     #the floor is what we drwa when we only want a floor, objects is when we want more elevated items
     floor = [Block(i * block_size, HEIGHT - block_size, block_size)  for i in range(-WIDTH // block_size, (WIDTH * 2) // block_size)]
-    objects = [*floor, Block(0, HEIGHT - block_size * 2, block_size), Block(block_size * 3, HEIGHT - block_size * 4, block_size)]
+    objects = [*floor, Block(0, HEIGHT - block_size * 2, block_size), Block(block_size * 3, HEIGHT - block_size * 4, block_size),fire]
 
     itemtodraw = objects
 
@@ -354,7 +397,9 @@ def main(window):
                     player.jump()
         
         player.loop(FPS)
+        fire.loop()
         playerMover.handle_move(player,itemtodraw)
+
         draw(window,background,bg_image,player,itemtodraw,offset_x)
         if ((player.rect.right - offset_x >= WIDTH - scroll_area_width) and player.x_vel > 0) or ((player.rect.left - offset_x <= scroll_area_width) and player.x_vel < 0):
             offset_x += player.x_vel
