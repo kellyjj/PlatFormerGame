@@ -144,6 +144,12 @@ class Player(pygame.sprite.Sprite):
         self.dest = (x,y)
         self.IsLanded = False
         self.jump_count =0 
+        self.hit = False
+        self.hit_count = 0
+
+    def make_hit(self):
+        self.hit = True
+        # self.hit_count = 0 
 
     def jump(self):
         #this handles the action of jumping.
@@ -202,6 +208,13 @@ class Player(pygame.sprite.Sprite):
         # if self.IsLanded == False:  this method also handles us falling till we land
         self.y_vel  += min(1,(self.fallcount/fps)*self.GRAVITY)
         self.move(self.x_vel,self.y_vel)
+
+        if self.hit:
+            self.hit_count+=1
+        if self.hit_count > 10: #fps*2:
+            self.hit = False
+            self.hit_count = 0
+
         self.fallcount = self.fallcount+1
 
         self.update_sprite()
@@ -209,9 +222,11 @@ class Player(pygame.sprite.Sprite):
     def update_sprite(self):
         #this updates our specific sprite
         sprite_sheet = "idle"
-        if self.x_vel!=0:
+        if self.hit:
+            sprite_sheet="hit"
+        elif self.x_vel!=0:
             sprite_sheet = "run"
-        if self.y_vel<0:
+        elif self.y_vel<0:
             if self.jump_count==1:
                 sprite_sheet="jump"
             elif self.jump_count==2:
@@ -322,7 +337,16 @@ class PlayerMove():
         if keys[pygame.K_RIGHT] and len(colide_right) <=1:
             player.move_right(PLAYER_VEL)
  
-        handle_vertical_collision(player,objects,player.y_vel)
+        verticle_colide = handle_vertical_collision(player,objects,player.y_vel)
+        to_check = [verticle_colide,colide_left,colide_right]
+
+        for obj in to_check:
+            if obj:
+                for i in obj:
+                    if i.name == "fire":
+                        x_hit = pygame.math.Vector2(player.rect.centerx,player.rect.centery).distance_to((i.rect.centerx,i.rect.centery))
+                        if x_hit <70:
+                            player.make_hit()
 
 #end of player move class
 
